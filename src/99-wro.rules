@@ -1,0 +1,2 @@
+SUBSYSTEM=="dma_heap", GROUP="video", MODE="0660"
+SUBSYSTEM=="pwm*", PROGRAM="/bin/sh -c 'chown -R [USER]:gpio /sys/class/pwm'"

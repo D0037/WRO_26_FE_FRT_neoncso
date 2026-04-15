@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}HSV Tuner - Live{% endblock %}
+
+{% block header %}
+  <h1>HSV Tuner</h1>
+  <span class="pill">LIVE</span>
+  <div class="status" id="headerStatus"><div class="dot"></div>Pi Camera Stream</div>
+  <div class="test-toggle" id="testToggle">
+    <span class="label">Test Mode</span>
+    <div class="toggle-switch"></div>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <div id="testPanel" class="test-panel" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="section-label" style="margin:0">Test Image</div>
+        <span class="test-badge"><div class="dot" style="width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:pulse 1.5s infinite"></div>TEST</span>
+      </div>
+      <div class="drop-zone" id="dropZoneLabel">
+        <div class="dz-icon">🖼</div>
+        <div class="dz-text">Drop image here or click to browse</div>
+        <div class="dz-name" id="dzName"></div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </div>
+
+    <div>
+      <div class="section-label">Color Filters</div>
+      <div class="filter-list" id="filterList"></div>
+    </div>
+
+    <div>
+      <div class="section-label">Lower Bound</div>
+      <div class="slider-group" id="lowerSliders"></div>
+    </div>
+    <div>
+      <div class="section-label">Upper Bound</div>
+      <div class="slider-group" id="upperSliders"></div>
+    </div>
+
+    <div>
+      <div class="section-label">Pixel HSV (hover on input)</div>
+      <div class="hsv-readout">
+        <div class="hsv-cell h"><span class="label">HUE</span><span class="val" id="hVal">–</span></div>
+        <div class="hsv-cell s"><span class="label">SAT</span><span class="val" id="sVal">–</span></div>
+        <div class="hsv-cell v"><span class="label">VAL</span><span class="val" id="vVal">–</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Python Dictionary</div>
+      <div class="dict-box" id="dictBox"></div>
+    </div>
+
+  </aside>
+
+  <div class="main">
+    <div class="video-row">
+      <div class="video-panel">
+        <div class="vp-label">Input</div>
+        <img id="inputImg" src="/video/input" alt="input stream">
+      </div>
+      <div class="video-panel">
+        <div class="vp-label">Overlay (mask)</div>
+        <img id="overlayImg" src="/video/mask" alt="overlay stream">
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <span>Active filter: <b id="bottomFilter">–</b></span>
+      <span>Hover over <b>input</b> image to inspect pixel HSV</span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

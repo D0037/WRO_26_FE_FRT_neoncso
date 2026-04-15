@@ -1,0 +1,7 @@
+opencv-contrib-python
+numpy
+RPi.GPIO
+rpi-hardware-pwm
+smbus2
+sparkfun-qwiic-vl53l1x
+Flask
