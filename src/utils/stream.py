@@ -32,6 +32,6 @@ def init():
     flask_thread = threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 5000, "threaded": True}, daemon=True)
     flask_thread.start()
 
-def show(name, frame, level=log):
+def show(name, frame):
     "Register a frame for streaming, processing loops are expected to call this for each frame"
     frames[name] = frame

@@ -78,9 +78,9 @@ def _real_camera_loop():
                 time.sleep(0.1)
                 continue
             frame = picam2.capture_array()
-            bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            #bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             with frames_lock:
-                frames["input"] = bgr
+                frames["input"] = frame
             time.sleep(0.01)
     except Exception as e:
         print(f"Camera error: {e}. Falling back to test pattern.")
