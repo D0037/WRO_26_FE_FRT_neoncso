@@ -1,4 +1,7 @@
 src/logs
+logs
+logs/*
+./logs/
 src/venv
 src/__pycache__
 src/utils/__pycache__

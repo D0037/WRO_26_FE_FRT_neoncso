@@ -31,11 +31,11 @@ def cnt_middle(cnt):
         cx, cy = 0, 0
     return cx, cy
 
-def area_filter(mask, size_coefficient, min_num, max_num):
+def area_filter(mask, size_coefficient, min_num = 1, max_num = 800):
     cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     if len(cnts) < 1:
-        return None, None
+        return None, []
     
     # Filter contours based on size keep the biggest n
     # where n is dependent of the largest countour
@@ -49,6 +49,58 @@ def area_filter(mask, size_coefficient, min_num, max_num):
     # Draw the filtered contours on the mask
     cv2.drawContours(mask, cnts, -1, 255, -1)
     return mask, cnts
+
+def get_direction() -> None | bool:
+    hsv = cv2.cvtColor(latest_frame, cv2.COLOR_BGR2HSV)
+    orange_mask = hsv_filter(hsv, "orange")
+    blue_mask = hsv_filter(hsv, "blue")
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    orange_mask = cv2.erode(orange_mask, kernel)
+    orange_mask = cv2.dilate(orange_mask, kernel)
+
+    blue_mask = cv2.erode(blue_mask, kernel)
+    blue_mask = cv2.dilate(blue_mask, kernel)
+
+    orange_mask, orange_cnts = area_filter(orange_mask, 70, 3)
+    blue_mask, blue_cnts = area_filter(blue_mask, 70, 3)
+
+    dbg_frame = np.zeros(latest_frame.shape, dtype=np.uint8)
+
+    dbg_frame[orange_mask == 255] = (0, 100, 255)
+    dbg_frame[blue_mask == 255] += np.array([255, 0, 0], dtype=np.uint8)
+    
+    #log.debug(orange_cnts, blue_cnts)
+    orange_mid = -1
+    blue_mid = -1
+    try:
+        if orange_cnts != None and len(orange_cnts) > 0:
+            orange_points = np.vstack(orange_cnts).squeeze()
+
+            if len(orange_points > 1):
+                omid_x = int(np.mean(orange_points[:, 0]))
+                omid_y = int(np.mean(orange_points[:, 1])) 
+                dbg_frame = cv2.circle(dbg_frame, (omid_x, omid_y), 7, (0, 0, 255), -1)
+                orange_mid = omid_y
+
+        if blue_cnts != None and len(blue_cnts) > 0:
+            blue_points = np.vstack(blue_cnts).squeeze()
+            if len(blue_points > 1):
+                bmid_x = int(np.mean(blue_points[:, 0]))
+                bmid_y = int(np.mean(blue_points[:, 1])) 
+                blue_mid = bmid_y
+
+                dbg_frame = cv2.circle(dbg_frame, (bmid_x, bmid_y), 7, (255, 50, 50), -1)
+    except:
+        pass
+    finally:
+        if orange_mid > blue_mid:
+            log.warn("orange line detected")
+        elif blue_mid > orange_mid:
+            log.warn("blue line detected")
+
+    stream.show("dbg", dbg_frame)
+
 
 def get_blocks():
     hsv = cv2.cvtColor(latest_frame, cv2.COLOR_BGR2HSV)
@@ -96,18 +148,36 @@ def camera_loop():
     picam2.configure(picam2.create_video_configuration(
         main={"format": "RGB888", "size": (1536, 864)} # Lowest resolution, highest framerate
     ))
-    picam2.set_controls({"AfMode": 2, "AeEnable": True, "FrameRate": 60}) # Set autofocus mode to continuous and enable auto exposure
+    picam2.set_controls({"AfMode": 2, "AeEnable": True, "FrameRate": 50}) # Set autofocus mode to continuous and enable auto exposure
 
     picam2.start()
     stream.init()              # Initialize network-based stream for debugging
 
     frame = picam2.capture_array()
 
+
     height, width, _ = frame.shape  # Get frame dimensions
 
     while not _kill:
         frame = picam2.capture_array()
-        stream.show("test", latest_frame)
+        frame = cv2.rotate(frame, cv2.ROTATE_180) 
+        
+        # Convert frame to grayscale for black line detection
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        lower_black = np.array([0])
+        upper_black = np.array([70])
+
+        # Mask area abovo black walls
+        black_mask = cv2.inRange(gray, lower_black, upper_black)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 15)) # Vertical kernel
+        black_mask = cv2.dilate(black_mask, kernel, iterations=3) # Dilate to fill gaps and remove noise
+        bottom_black_row = black_mask.shape[0] - np.argmax(np.flipud(black_mask), axis=0) - 1 # Find the bottom row of black pixels in each column
+
+        # Set pixels above the bottom black row to black
+        for x in range(black_mask.shape[1]):
+            frame[:bottom_black_row[x], x] = 0
+            
+        stream.show("test", frame)
         latest_frame = frame.copy()
 
 camera_thread = threading.Thread(target=camera_loop)

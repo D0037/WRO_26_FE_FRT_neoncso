@@ -57,5 +57,5 @@ def _log(logs, level=INFO):
     out_str = f"{(time.time() - start_time): 08.03f}\t{_LEVEL_STR[level]}\t{out_str}\n"
     
     log_file.write(out_str)
-    log_file.flush()
+    #log_file.flush()
     print(fstring[level] + out_str + "\033[0m", end="")

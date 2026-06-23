@@ -41,7 +41,7 @@ class Gyro:
         self.z = 0.0
 
         # to prevent drift
-        self.offset = {"x": 0.0, "y": 0.0, "z": 0.0}
+        self.offset = 0
 
         # i2c bus
         self.bus = smbus2.SMBus(1)
@@ -79,7 +79,7 @@ class Gyro:
             self.prev_time = time.time()
 
             # correct values
-            z_speed = read_i16(self.bus, self.addr, GYRO_XOUT_H + 4) / self.gyro_scale_factor
+            z_speed = (read_i16(self.bus, self.addr, GYRO_XOUT_H + 4) / self.gyro_scale_factor) - self.offset
 
             # update current rotation
             self.z += z_speed * self.time_elapsed
@@ -88,7 +88,9 @@ class Gyro:
         total = 0
 
         for _ in range(samples):
-            total += read_i16(self.bus, self.addr, GYRO_XOUT_H + 4) / self.gyro_scale_factor
+            val = read_i16(self.bus, self.addr, GYRO_XOUT_H + 4) / self.gyro_scale_factor
+            total += val
+            #log.debug(val)
             time.sleep(0.005)  # ~200 Hz
 
         offset = total / samples

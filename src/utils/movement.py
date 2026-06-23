@@ -17,18 +17,20 @@ prev_pos = 0
 prev_time = time.time()
 
 def encoder_callback(channel):
-    global position, last_a
+    global position, prev_a
     a = GPIO.input(conf.M_ENC_A)
     b = GPIO.input(conf.M_ENC_B)
 
-    if a != last_a:  # A changed
+    #log.debug("encoder A")
+
+    if a != prev_a:  # A changed
         if a == b:
             position += 1   # Clockwise
         else:
             position -= 1   # Counter-clockwise
-    last_a = a
+    prev_a = a
 
-def setup():
+def setup(g):
     global servo_pwm, l_pwm, r_pwm, gyro
     GPIO.setup(conf.M_PWM_1, GPIO.OUT)
     GPIO.setup(conf.M_PWM_2, GPIO.OUT)
@@ -38,18 +40,18 @@ def setup():
     GPIO.add_event_detect(conf.M_ENC_A, GPIO.BOTH, callback=encoder_callback)
 
     servo_pwm = HardwarePWM(pwm_channel=0, hz=50, chip=0)
-    servo_pwm.start()
+    servo_pwm.start(0)
 
-    l_pwm = GPIO.PWM(conf.M_PWM_1, 500)
-    r_pwm = GPIO.PWM(conf.M_PWM_2, 500)
+    l_pwm = GPIO.PWM(conf.M_PWM_1, 200)
+    r_pwm = GPIO.PWM(conf.M_PWM_2, 200)
     l_pwm.start(0)
     r_pwm.start(0)
 
-    gyro = Gyro()
+    gyro = g
 
 def set_angle(angle):
     # Map the angle to a duty cycle (0 to 100)
-    duty = ((angle + 90) / 36) + 5
+    duty = ((angle - 15) / 36) + 5
     servo_pwm.change_duty_cycle(duty)
 
 def get_pos():
@@ -92,7 +94,7 @@ def move(speed, dist, br=False):
     prev_err = 0
 
     p = 2
-    i = 0.1
+    e = 0.1
     d = 0.5
 
     while get_pos() < start_pos + dist:
@@ -103,6 +105,10 @@ def move(speed, dist, br=False):
         c = error * p
         c += error_sum * i
         c += d * (error - prev_err) / (now - prev_time)
+
+        prev_time = now
+        error_sum += error
+        prev_err = error
 
         set_angle(c)
 
