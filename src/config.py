@@ -13,12 +13,12 @@ MS_PER_MEASURE = 50
 MEASURE_DENSITY = 55
 POLL_PERIOD = 0.005
 
-M_PWM_1 = 23
-M_PWM_2 = 24
+M_PWM_1 = 24
+M_PWM_2 = 23
 
 M_ENC_A = 8
 M_ENC_B = 7
-M_ENC_FACTOR = (42 * math.pi) * 2
+M_ENC_FACTOR = (42 * math.pi) / 3
 
 BTN_1 = 5
 BTN_2 = 6

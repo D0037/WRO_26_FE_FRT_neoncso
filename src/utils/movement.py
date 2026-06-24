@@ -51,7 +51,7 @@ def setup(g):
 
 def set_angle(angle):
     # Map the angle to a duty cycle (0 to 100)
-    duty = ((angle - 15) / 36) + 5
+    duty = ((angle - 45) / 36) + 5
     servo_pwm.change_duty_cycle(duty)
 
 def get_pos():
@@ -93,18 +93,21 @@ def move(speed, dist, br=False):
     prev_time = time.time()
     prev_err = 0
 
-    p = 2
-    e = 0.1
-    d = 0.5
+    kp = 5
+    ki = 0.0
+    kd = 0.0
 
     while get_pos() < start_pos + dist:
         set_speed(speed)
         error = gyro.get() - start_angle
 
         now = time.time()
-        c = error * p
-        c += error_sum * i
-        c += d * (error - prev_err) / (now - prev_time)
+        p = error * kp
+        i = error_sum * ki
+        d = kd * (error - prev_err) / (now - prev_time)
+        c = p + i + d
+
+        log.debug(error, p, i, d, c, get_pos())
 
         prev_time = now
         error_sum += error

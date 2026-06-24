@@ -55,6 +55,8 @@ class Gyro:
         current = self.bus.read_byte_data(self.addr, ACCEL_CONFIG)
         new_cfg = (current & ~0x18) | (afs_sel << 3)
         self.bus.write_byte_data(self.addr, ACCEL_CONFIG, new_cfg)
+
+        time.sleep(0.1)
         
         # calibrate to minimize drift
         log.info("Calibrating gyro")
@@ -90,8 +92,8 @@ class Gyro:
         for _ in range(samples):
             val = read_i16(self.bus, self.addr, GYRO_XOUT_H + 4) / self.gyro_scale_factor
             total += val
-            #log.debug(val)
-            time.sleep(0.005)  # ~200 Hz
+           # log.debug(val)
+            time.sleep(0.01)  # ~100 Hz
 
         offset = total / samples
         return offset

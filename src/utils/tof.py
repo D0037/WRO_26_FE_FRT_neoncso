@@ -15,9 +15,9 @@ Long 360 73
 _DEFAULT_ADDR = 0x29
 
 SENSORS = [
-    {"name": "front", "shut": conf.TOF_SHUT_3, "addr": 0x2a, "roi": (16, 4),  "center": 195, "mode": 1},
-    {"name": "left",  "shut": conf.TOF_SHUT_2, "addr": 0x2b, "roi": (16, 4), "center": 195, "mode": 1},
-    {"name": "right",  "shut": conf.TOF_SHUT_3, "addr": 0x2c, "roi": (16, 4), "center": 197, "mode": 2},
+    {"name": "front", "shut": conf.TOF_SHUT_1, "addr": 0x2a, "roi": (16, 4),  "center": 195, "mode": 1},
+    {"name": "right",  "shut": conf.TOF_SHUT_2, "addr": 0x2b, "roi": (16, 4), "center": 195, "mode": 1},
+    {"name": "left",  "shut": conf.TOF_SHUT_3, "addr": 0x2c, "roi": (16, 4), "center": 197, "mode": 2},
 ]
 
 ms_per_measure = conf.MS_PER_MEASURE
@@ -35,24 +35,24 @@ def _setup_gpio():
     for s in SENSORS:
         GPIO.setup(s["shut"], GPIO.OUT)
         GPIO.output(s["shut"], GPIO.LOW)
-    time.sleep(0.2)
+    time.sleep(5)
  
 def _bring_up_sensors():
     for s in SENSORS:
         name = s["name"]
 
         GPIO.output(s["shut"], GPIO.HIGH)
-        time.sleep(0.5)
+        time.sleep(0.05)
 
         dev = qwiic_vl53l1x.QwiicVL53L1X()
-        status = dev.init_sensor(s["addr"])
+        status = dev.init_sensor(0x29)
         log.debug(status)
         if status == 0:
             raise IOError(
                 f"TOF '{name}' inicializálás közben elment lopni (status {status}) "
                 f"XSHUT pin {s['shut']}"
             )
-
+        dev.set_i2c_address(s["addr"])
         dev.set_distance_mode(s["mode"])
         dev.set_timing_budget_in_ms(ms_per_measure)
         dev.set_inter_measurement_in_ms(measure_density)
@@ -103,7 +103,7 @@ def get_right():
 
 def all():
     """Snapshot of all sensors as a {name: mm} dict."""
-    with _lock():
+    with _lock:
         return dict(_dist)
 
 def kill():

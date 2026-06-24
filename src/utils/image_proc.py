@@ -12,6 +12,7 @@ height, width = 0, 0
 picam2 = None
 _kill = False
 
+
 def kill():
     global _kill
     _kill = True
@@ -96,8 +97,12 @@ def get_direction() -> None | bool:
     finally:
         if orange_mid > blue_mid:
             log.warn("orange line detected")
+
+            return True
         elif blue_mid > orange_mid:
             log.warn("blue line detected")
+
+            return False
 
     stream.show("dbg", dbg_frame)
 
