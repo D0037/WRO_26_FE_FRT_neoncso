@@ -64,22 +64,6 @@ def enc_test():
 if __name__ == "__main__":
    try:
       move.move(100, 50, True)
-     # move.move(100, 30)
-      move.set_angle(0)
-      move.set_speed(100)
-      time.sleep(5)
-      move.set_speed(-100)
-      while True:
-         move.move(100, 50, False)
-
-         #angle = input("Szög: ")
-         #move.set_angle(int(angle))
-      move.set_angle(30)
-      while True:
-         log.info(tof.all())
-         time.sleep(0.05)
-         #log.info(gyro.get(), move.get_pos())
-      i#mage_test()
    except KeyboardInterrupt:
       pass
    finally:
