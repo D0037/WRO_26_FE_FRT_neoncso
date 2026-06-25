@@ -42,6 +42,7 @@ def image_test():
       im.get_direction()
       time.sleep(1/130)
 
+
 def enc_test():
    move.set_speed(100)
    time.sleep(5)
@@ -63,7 +64,10 @@ def enc_test():
    
 if __name__ == "__main__":
    try:
-      move.move(100, 50, True)
+      move.set_angle(0)
+      while True:
+         print(tof.all())
+         print(0.5)
    except KeyboardInterrupt:
       pass
    finally:
@@ -71,4 +75,3 @@ if __name__ == "__main__":
       gyro.kill()
       move.cleanup()
       
-
