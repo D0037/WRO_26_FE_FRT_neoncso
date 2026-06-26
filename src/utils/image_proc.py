@@ -12,7 +12,6 @@ height, width = 0, 0
 picam2 = None
 _kill = False
 
-
 def kill():
     global _kill
     _kill = True
@@ -51,7 +50,8 @@ def area_filter(mask, size_coefficient, min_num = 1, max_num = 800):
     cv2.drawContours(mask, cnts, -1, 255, -1)
     return mask, cnts
 
-def get_direction() -> None | bool:
+def get_direction() -> str | None:
+    
     hsv = cv2.cvtColor(latest_frame, cv2.COLOR_BGR2HSV)
     orange_mask = hsv_filter(hsv, "orange")
     blue_mask = hsv_filter(hsv, "blue")
@@ -92,19 +92,21 @@ def get_direction() -> None | bool:
                 blue_mid = bmid_y
 
                 dbg_frame = cv2.circle(dbg_frame, (bmid_x, bmid_y), 7, (255, 50, 50), -1)
-    except:
-        pass
-    finally:
-        if orange_mid > blue_mid:
-            log.warn("orange line detected")
-
-            return True
-        elif blue_mid > orange_mid:
-            log.warn("blue line detected")
-
-            return False
-
+    except Exception as e:
+        log.warn(f"Line detection error: {e}")
+        return None
+   
+    if orange_mid > blue_mid:
+        log.warn("orange line detected")
+        return "orange"
+            
+    elif blue_mid > orange_mid:
+        log.warn("blue line detected")
+        return "blue"
+    
     stream.show("dbg", dbg_frame)
+
+    return None
 
 
 def get_blocks():

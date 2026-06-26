@@ -86,7 +86,7 @@ class Gyro:
             # update current rotation
             self.z += z_speed * self.time_elapsed
 
-    def calibrate_gyro(self, samples=1000):
+    def calibrate_gyro(self, samples=200):
         total = 0
 
         for _ in range(samples):
